@@ -12,6 +12,13 @@ details on usage. All attempts have been made to mirror ActiveRecords core funct
 You will need to provide your web services URL in the config.yml file. You can provide a different
 URL For each Rails environment.
 
+Requirements
+=======
+
+The HTTParty gem is required for this plugin. Install it with:
+
+gem install httparty
+
 
 Examples
 =======

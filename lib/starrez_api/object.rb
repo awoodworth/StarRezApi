@@ -1,3 +1,7 @@
+# Much props to _why and his (poignant) guide
+# This code can originally be found at
+# http://viewsourcecode.org/why/hacking/seeingMetaclassesClearly.html
+
 class Object
   # The hidden singleton lurks behind everyone
 	def metaclass; class << self; self; end; end

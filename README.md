@@ -24,6 +24,12 @@ The HTTParty and XML Simple gems are required for this plugin. Install them with
 Examples
 =======
 
+You must require the StarRezAPI module before you can use it, there is no hook method at the moment. 
+You can do this in the models, in your environment, or wherever else you might want to throw it. It's
+a one-liner
+
+    require 'starrez_api'
+
 __Dynamic Classes__
 To dynamically define the StarRez tables your application will use you must load them somehow. Rather
 than creating a bunch of empty class files you can create a method that will create these classes on

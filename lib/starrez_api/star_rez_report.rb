@@ -1,8 +1,6 @@
 require 'httparty'
 class StarRezReport
   include HTTParty
-  include HTTParty::Icebox
-  cache :store => 'file', :timeout => 60, :location => "memory"#, :logger => Logger.new(STDOUT)
   base_uri PLUGIN_CONFIG['base_uri']
   attr_accessor :name, :results
     

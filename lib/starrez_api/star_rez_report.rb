@@ -1,7 +1,7 @@
 require 'httparty'
 class StarRezReport
   include HTTParty
-  base_uri PLUGIN_CONFIG['base_uri']
+  base_uri STARREZ_CONFIG['base_uri']
   attr_accessor :name, :results
     
   def self.find_by_id(entry, options = {})

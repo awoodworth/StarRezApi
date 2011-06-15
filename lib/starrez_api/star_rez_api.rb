@@ -3,7 +3,7 @@ require 'xmlsimple'
 
 module StarRezApi  
   include HTTParty
-  base_uri PLUGIN_CONFIG['base_uri']
+  base_uri STARREZ_CONFIG['base_uri']
 
   def self.included receiver
     receiver.extend ClassMethods

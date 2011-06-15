@@ -7,7 +7,6 @@ PLUGIN_CONFIG = YAML.load_file(File.dirname(__FILE__) + "/config.yml")[Rails.env
 begin
   require 'httparty'
   HTTParty
-  require 'starrez_api/http_icebox'
 rescue Exception => e
   puts "HTTParty is a required GEM for this plugin. Solve by typing: gem install httparty"
 end

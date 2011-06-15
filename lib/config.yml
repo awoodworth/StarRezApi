@@ -1,8 +1,0 @@
-development:
-  base_uri: https://localhost/StarRezPortalREST/services/
-  
-production:
-  base_uri: https://localhost/StarRezPortalREST/services/
-  
-test:
-  base_uri: https://localhost/StarRezPortalREST/services/

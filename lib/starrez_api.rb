@@ -1,7 +1,7 @@
 # StarRez REST Web Services and Report API
 
 # Load our configuration
-PLUGIN_CONFIG = YAML.load_file(File.dirname(__FILE__) + "/config.yml")[Rails.env]
+PLUGIN_CONFIG = YAML.load_file(File.dirname(__FILE__) + "/starrez.yml")[Rails.env]
 
 # Check for required gems
 begin

@@ -1,7 +1,12 @@
 # StarRez REST Web Services and Report API
 
 # Load our configuration
-STARREZ_CONFIG = YAML.load_file(File.dirname(__FILE__) + "/starrez.yml")[Rails.env]
+if File.exists?(File.join(Rails.root,"config","starrez.yml"))
+  config_path = File.join(Rails.root,"config","starrez.yml")
+else
+  config_path = File.dirname(__FILE__) + "/starrez.yml"
+end
+STARREZ_CONFIG = YAML.load_file(config_path)[Rails.env]
 
 # Check for required gems
 begin

@@ -3,9 +3,6 @@ require 'xmlsimple'
 
 module StarRezApi  
   include HTTParty
-  include HTTParty::Icebox
-  cache :store => 'file', :timeout => 10, :location => "memory"#, :logger => Logger.new(STDOUT)
-  
   base_uri PLUGIN_CONFIG['base_uri']
 
   def self.included receiver

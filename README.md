@@ -19,6 +19,20 @@ The HTTParty and XML Simple gems are required for this plugin. Install them with
 
     $ gem install httparty
     $ gem install xml-simple
+    
+Configuration
+=======
+
+You'll need to create a _config/starrez.yml_ configuration file. It should look something like this, replacing {server} with your actual address.
+
+    development:
+      base_uri: https://{server}/StarRezPortalREST/services/
+      
+    production:
+      base_uri: https://{server}/StarRezPortalREST/services/
+      
+    test:
+      base_uri: https://{server}/StarRezPortalREST/services/
 
 
 Examples

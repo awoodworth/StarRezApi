@@ -15,9 +15,10 @@ URL For each Rails environment.
 Requirements
 =======
 
-The HTTParty gem is required for this plugin. Install it with:
+The HTTParty and XML Simple gems are required for this plugin. Install them with:
 
-gem install httparty
+    $ gem install httparty
+    $ gem install xml-simple
 
 
 Examples
@@ -66,6 +67,9 @@ look something like this.
         end
       end
       extend ClassMethods      
-    end
+    end    
+
+Don't forget, YMMV with this gem. It works for us but there could be a few things that need to change for your install.
+I'd encourage you to fork this repo and hack away.
 
 Copyright (c) 2011 Daniel Reedy, Southern Illinois University Carbondale, released under the MIT license

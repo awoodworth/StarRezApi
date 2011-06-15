@@ -1,9 +1,12 @@
 Gem::Specification.new do |s|
   s.name = "StarRezApi"
+  s.authors = ["Daniel Reedy","Steven Stephen"]
+  s.email = "dreedy@housing.siu.edu"
+  s.homepage = "http://www.housing.siu.edu"
   s.summary = "A module mixin that allows a class to access StarRez"
   s.description = "This gem that allows the user access to the StarRez REST Web Services and Reporting API"
   s.files = Dir["{lib,rails}/**/*"] + ["MIT-LICENSE", "Rakefile"]
-  s.version = "0.2.2"
+  s.version = "0.2.3"
   
   if s.respond_to? :specification_version then
       s.specification_version = 3

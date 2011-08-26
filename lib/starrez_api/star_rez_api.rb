@@ -4,6 +4,7 @@ require 'xmlsimple'
 module StarRezApi  
   include HTTParty
   base_uri STARREZ_CONFIG['base_uri']
+  headers 'StarRezUsername' => STARREZ_CONFIG['username'], 'StarRezPassword' => STARREZ_CONFIG['password']
 
   def self.included receiver
     receiver.extend ClassMethods
@@ -240,7 +241,11 @@ module StarRezApi
       if results.response.is_a?(Net::HTTPNotFound)
         return nil
       elsif results.code.eql? 403
-        raise SecurityError, "Access Denied to API"
+        if options[:debug]
+          return results
+        else
+          raise SecurityError, "Access Denied to API"
+        end
       elsif options[:return].eql? :response
         return results
       elsif results.code.eql? 200

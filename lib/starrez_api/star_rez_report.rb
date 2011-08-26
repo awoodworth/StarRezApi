@@ -2,6 +2,8 @@ require 'httparty'
 class StarRezReport
   include HTTParty
   base_uri STARREZ_CONFIG['base_uri']
+  headers 'StarRezUsername' => STARREZ_CONFIG['username'], 'StarRezPassword' => STARREZ_CONFIG['password']
+  
   attr_accessor :name, :results
     
   def self.find_by_id(entry, options = {})

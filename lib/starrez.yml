@@ -1,8 +1,14 @@
 development:
   base_uri: https://localhost/StarRezPortalREST/services/
+  username: demo
+  password: test
   
 production:
   base_uri: https://localhost/StarRezPortalREST/services/
+  username: demo
+  password: test
   
 test:
   base_uri: https://localhost/StarRezPortalREST/services/
+  username: demo
+  password: test

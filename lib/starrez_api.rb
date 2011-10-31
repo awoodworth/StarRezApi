@@ -20,3 +20,4 @@ end
 require 'starrez_api/object'
 require 'starrez_api/star_rez_api'
 require 'starrez_api/star_rez_report'
+require 'starrez_api/star_rez_account'

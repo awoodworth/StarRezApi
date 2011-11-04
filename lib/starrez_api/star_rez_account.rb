@@ -40,7 +40,40 @@ class StarRezAccount
   end
   
   def self.create_transaction(entry,amount,conditions={},options={})
-    # TODO: Get this working at some point, create_payment is good enough for now.
+    url = "#{base_uri}/accounts/createtransaction/#{entry}"
+    
+    transaction_xml = <<XML
+    <Transaction>
+      <TransactionTypeEnum>Payment</TransactionTypeEnum>
+      <Amount>#{amount}</Amount>
+      <Description>#{conditions[:description]}</Description>
+      <TermSessionID>#{conditions[:term_session_id]}</TermSessionID>
+      <ExternalID>#{conditions[:external_id]}</ExternalID>
+      <Comments>#{conditions[:comments]}</Comments>
+      <ChargeGroupID>#{conditions[:charge_group_id]}</ChargeGroupID>
+      <ChargeItemID>#{conditions[:charge_item_id]}</ChargeItemID>
+      <SecurityUserID>6</SecurityUserID>
+    </Transaction>
+XML
+    response = post(url, :body => transaction_xml)
+    if options[:return].eql? :response
+      return response
+    else
+      if response.code.eql? 409
+        raise ArgumentError, "Duplicate Transaction Found"
+      elsif response.code.eql? 404
+        raise ArgumentError, "Invalid Entry ID"
+      elsif response.code.eql? 403
+        raise SecurityError, 'Access Denied to API'
+      elsif response.code.eql? 400
+        raise ArgumentError, "Bad Request"
+      elsif response.code.eql? 200
+        doc = Hpricot(response.body)
+        doc.search("transactionid").inner_html
+      else
+        return false
+      end
+    end    
   end
   
   def self.create_payment(entry,amount,conditions={},options={})
@@ -54,31 +87,33 @@ class StarRezAccount
         if charge_group[:id].present?
           charge_groups_string += %(<BreakUp ChargeGroupID="#{charge_group[:id]}">)
         elsif charge_group[:name].present?
-          charge_groups_string += %(<BreakUp ChargeGroup="#{charge_group[:name]}">)
+  exi        charge_groups_string += %(<BreakUp ChargeGroup="#{charge_group[:name]}">)
         else
           raise ArgumentError, "Charge group ID or name must be provided"
         end
         raise ArgumentError, "Amount must be provided for payment breakup" if charge_group[:amount].blank?
         charge_groups_string += %(<Amount>#{charge_group[:amount]}</Amount>)
-        if charge_group[:comments].present?
-          charge_groups_string += %(<TransactionComments>#{charge_group[:comments]}</TransactionComments>)
-        end
         if charge_group[:tag].present?
           charge_groups_string += %(<TransactionTag>#{charge_group[:tag]}</TransactionTag>)
         end
         charge_groups_string += %(<TransactionExternalID>#{charge_group[:external_id]}</TransactionExternalID>) if charge_group[:external_id].present?
+        charge_groups_string += %(<TransactionTermSessionID>#{charge_group[:term_session_id]}</TransactionTermSessionID>) if charge_group[:term_session_id].present?
         charge_groups_string += %(</BreakUp>)
       end
     else
       raise ArgumentError, "At least one charge group must be provided in :charge_groups"
     end
     
+    amount_string = %(<Amount>#{amount}</Amount>)
+    description_string = %(<Description>#{conditions[:description]}</Description>)
+    
     payment_xml = <<XML  
     <Payment>
       <TransactionTypeEnum>Payment</TransactionTypeEnum>
       <PaymentTypeID>8</PaymentTypeID>
-      <Description>#{conditions[:description]}</Description>
-      <Amount>#{amount}</Amount>
+      <SecurityUserID>6</SecurityUserID>
+      #{description_string}
+      #{amount_string}
       #{charge_groups_string}
     </Payment>
 XML

@@ -38,7 +38,7 @@ module StarRezApi
               new_child.populate_variables(child)
               children << new_child
             end
-            new_k = k.to_s.underscore.pluralize
+            new_k = k.to_s.gsub(/_/,'__').underscore.pluralize
             self.instance_variable_set("@#{new_k}", children)
             meta_def new_k do
               self.instance_variable_get("@#{new_k}")
@@ -50,7 +50,7 @@ module StarRezApi
             # Ignore sub-objects
           else
             unless k.blank?
-              k = k.to_s.underscore
+              k = k.to_s.gsub(/_/,'__').underscore
               self.instance_variable_set("@#{k}",v)
               meta_def k do
                 self.instance_variable_get("@#{k}")
@@ -70,7 +70,7 @@ module StarRezApi
     def changed
       changed_attributes = Hash.new
       self.instance_variable_get("@original_hash").each do |k,v|
-        k = k.to_s.underscore
+        k = k.to_s.gsub(/_/,'__').underscore
         current_value = self.send(k.to_sym)
         unless current_value.eql? v
           changed_attributes[k.to_sym] = [v, current_value]
@@ -89,7 +89,7 @@ module StarRezApi
         if response.code.eql? 200
           original_hash = self.instance_variable_get("@original_hash")
           self.build_query(self.changed).keys.each do |attribute|
-            original_hash[attribute.to_s] = self.send(attribute.to_s.underscore.to_sym)
+            original_hash[attribute.to_s] = self.send(attribute.to_s.gsub(/_/,'__').underscore.to_sym)
           end
           self.instance_variable_set("@original_hash",original_hash)
           return true

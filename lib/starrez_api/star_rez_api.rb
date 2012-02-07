@@ -104,7 +104,7 @@ module StarRezApi
     
     def create(attribute_hash = {}, options ={})
       formatted_hash = Hash.new
-      attribute_hash.each_pair { |column, value| formatted_hash[column.to_s.camelize.to_sym] = value }
+      attribute_hash.each_pair { |column, value| formatted_hash[net_camelize(column.to_s).to_sym] = value }
       results = StarRezApi::post("#{StarRezApi::base_uri}/create/#{self.class_name}", :body => formatted_hash)
       if results.code.eql? 200
         if options[:return].eql? :boolean
@@ -117,7 +117,11 @@ module StarRezApi
       elsif results.code.eql? 400
         return false
       else
-        return false
+        if options[:return].eql? :response
+          return results
+        else
+          return false
+        end
       end
     end
     
@@ -312,6 +316,13 @@ module StarRezApi
       else
         raise ArgumentError, "Condition needs to be a hash of values, Please review the source code"
       end
+    end
+
+    # .Net Camelize
+    # Ruby's recent update strips out extra underscores. We need that back
+    def net_camelize(string)
+      string = string.sub(/^[a-z\d]*/) { $&.capitalize }
+      string.gsub(/(?:_|(\/))([a-z\d]{1})/i) { "#{$1}#{$2.capitalize}" }.gsub('/', '::')
     end
   end
 end

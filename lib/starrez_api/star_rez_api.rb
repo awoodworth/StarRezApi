@@ -224,17 +224,17 @@ module StarRezApi
       end
       unless options[:fields].blank?
         fields = Array.new
-        options[:fields].each { |f| fields << f.to_s.camelize }
+        options[:fields].each { |f| fields << net_camelize(f.to_s) }
         query_array << "_fields=#{fields.join(',')}"
       end
       tables = Array.new
       unless options[:include].blank?
-        options[:include].each { |t| tables << t.to_s.camelize }
+        options[:include].each { |t| tables << net_camelize(t.to_s)}
         query_array << "_relatedtables=#{tables.join(',')}"
       end
       unless options[:order].blank?
         order = Array.new
-        options[:order].each { |o| order << (options[:order][o].eql? :desc) ? "#{o.to_s.camelize}.desc" : "#{o.to_s.camelize}"}
+        options[:order].each { |o| order << (options[:order][o].eql? :desc) ? "#{net_camelize(o.to_s)}.desc" : "#{net_camelize(o.to_s)}"}
         query_array << "_orderby=#{order.join(',')}"
       end
       unless options[:limit].blank?
@@ -279,7 +279,7 @@ module StarRezApi
     def build_query(hash)
       query = Hash.new
       hash.keys.each do |attribute|
-        query[attribute.to_s.camelize.to_sym] = self.send(attribute)
+        query[net_camelize(attribute.to_s).to_sym] = self.send(attribute)
       end
       return query
     end
@@ -304,7 +304,7 @@ module StarRezApi
       queries = Array.new
       if conditions.is_a?(Hash)
         conditions.each_pair do |column, value|
-          query = column.to_s.camelize
+          query = net_camelize(column.to_s)
           if value.is_a?(Hash)
             query += "[_operator%3D#{value.keys.first.to_s}]=#{parse_value(value[value.keys.first])}"
           else

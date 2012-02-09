@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.summary = "A module mixin that allows a class to access StarRez"
   s.description = "This gem that allows the user access to the StarRez REST Web Services, Reporting, and Accounts API"
   s.files = Dir["{lib,rails}/**/*"] + ["MIT-LICENSE", "Rakefile"]
-  s.version = "0.3.4"
+  s.version = "0.3.5"
   
   if s.respond_to? :specification_version then
       s.specification_version = 3

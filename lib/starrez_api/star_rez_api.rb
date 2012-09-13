@@ -105,13 +105,15 @@ module StarRezApi
     def create(attribute_hash = {}, options ={})
       formatted_hash = Hash.new
       attribute_hash.each_pair { |column, value| formatted_hash[net_camelize(column.to_s).to_sym] = value }
-      results = StarRezApi::post("#{StarRezApi::base_uri}/create/#{self.class_name}", :body => formatted_hash)
+      results = StarRezApi::post("#{StarRezApi::base_uri}/create/#{self.class_name}.xml", :body => formatted_hash)
       if results.code.eql? 200
         if options[:return].eql? :boolean
           return true
+        elsif options[:return].eql? :response
+          return results
         else
           response = XmlSimple.xml_in(results.body)
-          new_id = response["entry"][0]["content"]
+          new_id = response["#{self.class_name}ID"].first
           return self.find new_id
         end
       elsif results.code.eql? 400

@@ -1,14 +1,13 @@
 require 'httparty'
 require 'xmlsimple'
 
-
 class StarRezAccount
   include HTTParty
   base_uri STARREZ_CONFIG['base_uri']
   headers 'StarRezUsername' => STARREZ_CONFIG['username'], 'StarRezPassword' => STARREZ_CONFIG['password']
-  
+
   attr_accessor :name, :results, :total_amount, :total_tax_amount, :total_tax_amount2, :entry_id
-  
+
   def self.get_balance(*args)
     options = args.extract_options!
     entry = args[0] || @entry_id
@@ -38,13 +37,15 @@ class StarRezAccount
       end
     end
   end
-  
+
   def self.create_transaction(entry,amount,conditions={},options={})
+    conditions[:transaction_type_enum] ||= "Payment"
     url = "#{base_uri}/accounts/createtransaction/#{entry}"
-    
-    transaction_xml = <<XML
+
+    transaction_xml =
+    "<?xml version='1.0' encoding='utf-16' ?>
     <Transaction>
-      <TransactionTypeEnum>Payment</TransactionTypeEnum>
+      <TransactionTypeEnum>#{conditions[:transaction_type_enum]}</TransactionTypeEnum>
       <Amount>#{amount}</Amount>
       <Description>#{conditions[:description]}</Description>
       <TermSessionID>#{conditions[:term_session_id]}</TermSessionID>
@@ -53,8 +54,8 @@ class StarRezAccount
       <ChargeGroupID>#{conditions[:charge_group_id]}</ChargeGroupID>
       <ChargeItemID>#{conditions[:charge_item_id]}</ChargeItemID>
       <SecurityUserID>6</SecurityUserID>
-    </Transaction>
-XML
+    </Transaction>"
+
     response = post(url, :body => transaction_xml)
     if options[:return].eql? :response
       return response
@@ -73,9 +74,9 @@ XML
       else
         return false
       end
-    end    
+    end
   end
-  
+
   def self.create_payment(entry,amount,conditions={},options={})
     conditions[:description] ||= "Deposit"
     url = "#{base_uri}/accounts/createpayment/#{entry}"
@@ -87,7 +88,7 @@ XML
         if charge_group[:id].present?
           charge_groups_string += %(<BreakUp ChargeGroupID="#{charge_group[:id]}">)
         elsif charge_group[:name].present?
-  exi        charge_groups_string += %(<BreakUp ChargeGroup="#{charge_group[:name]}">)
+          charge_groups_string += %(<BreakUp ChargeGroup="#{charge_group[:name]}">)
         else
           raise ArgumentError, "Charge group ID or name must be provided"
         end
@@ -103,11 +104,12 @@ XML
     else
       raise ArgumentError, "At least one charge group must be provided in :charge_groups"
     end
-    
+
     amount_string = %(<Amount>#{amount}</Amount>)
     description_string = %(<Description>#{conditions[:description]}</Description>)
-    
-    payment_xml = <<XML  
+
+    payment_xml =
+    "<?xml version='1.0' encoding='utf-16' ?>
     <Payment>
       <TransactionTypeEnum>Payment</TransactionTypeEnum>
       <PaymentTypeID>8</PaymentTypeID>
@@ -115,12 +117,13 @@ XML
       #{description_string}
       #{amount_string}
       #{charge_groups_string}
-    </Payment>
-XML
-    
-    response = post(url, :body => payment_xml)
+    </Payment>"
+
+    response = post(url, body: payment_xml)
     if options[:return].eql? :response
       return response
+    elsif options[:return].eql? :xml
+      return payment_xml
     else
       if response.code.eql? 409
         raise ArgumentError, "Duplicate Transaction Found"
@@ -138,9 +141,9 @@ XML
       end
     end
   end
-  
+
   private
-    
+
   def self.get_condition_string(conditions)
     queries = Array.new
     if conditions.is_a?(Hash)
@@ -158,7 +161,7 @@ XML
       raise ArgumentError, "Condition needs to be a hash of values, Please review the source code"
     end
   end
-    
+
   #Just a quick method used in get_condition_string that would have been repeated
   #Just takes the array and converts it into a formatted string for StarRezAPI
   def self.parse_value(values)
@@ -166,7 +169,7 @@ XML
       return URI::encode(values.join(','))
     else
       return URI::encode(values.to_s)
-    end    
+    end
   end
-  
+
 end

@@ -1,7 +1,7 @@
 require 'httparty'
 require 'xmlsimple'
 
-module StarRezApi  
+module StarRezApi
   include HTTParty
   base_uri STARREZ_CONFIG['base_uri']
   headers 'StarRezUsername' => STARREZ_CONFIG['username'], 'StarRezPassword' => STARREZ_CONFIG['password']
@@ -26,47 +26,47 @@ module StarRezApi
     def class_name
       self.name.gsub(/.*\:\:/,'')
     end
-    
-     def populate_variables(hash, related_tables=[])
-        self.instance_variable_set("@original_hash",hash)
-        hash.each do |k,v|
-          if related_tables.include? k.to_s
-            children = Array.new
-            v = [v] unless v.is_a? Array # This handles the instance of a single-child
-            v.each do |child|
-              new_child = self.clone
-              new_child.populate_variables(child)
-              children << new_child
+
+    def populate_variables(hash, related_tables=[])
+      self.instance_variable_set("@original_hash",hash)
+      hash.each do |k,v|
+        if related_tables.include? k.to_s
+          children = Array.new
+          v = [v] unless v.is_a? Array # This handles the instance of a single-child
+          v.each do |child|
+            new_child = self.clone
+            new_child.populate_variables(child)
+            children << new_child
+          end
+          new_k = k.to_s.gsub(/_/,'__').underscore.pluralize
+          self.instance_variable_set("@#{new_k}", children)
+          meta_def new_k do
+            self.instance_variable_get("@#{new_k}")
+          end
+          meta_def "#{new_k}=" do |v|
+            self.instance_variable_set("@#{new_k}",v)
+          end
+        elsif k.is_a?(Hash)
+          # Ignore sub-objects
+        else
+          unless k.blank?
+            k = k.to_s.gsub(/_/,'__').underscore
+            self.instance_variable_set("@#{k}",v)
+            meta_def k do
+              self.instance_variable_get("@#{k}")
             end
-            new_k = k.to_s.gsub(/_/,'__').underscore.pluralize
-            self.instance_variable_set("@#{new_k}", children)
-            meta_def new_k do
-              self.instance_variable_get("@#{new_k}")
-            end
-            meta_def "#{new_k}=" do |v|
-              self.instance_variable_set("@#{new_k}",v)
-            end
-          elsif k.is_a?(Hash)
-            # Ignore sub-objects
-          else
-            unless k.blank?
-              k = k.to_s.gsub(/_/,'__').underscore
+            meta_def "#{k}=" do |v|
               self.instance_variable_set("@#{k}",v)
-              meta_def k do
-                self.instance_variable_get("@#{k}")
-              end
-              meta_def "#{k}=" do |v|
-                self.instance_variable_set("@#{k}",v)
-              end
             end
           end
         end
       end
-  
+    end
+
     def id
       self.send "#{self.class_name.underscore}_id"
     end
-       
+
     def changed
       changed_attributes = Hash.new
       self.instance_variable_get("@original_hash").each do |k,v|
@@ -78,11 +78,11 @@ module StarRezApi
       end
       return changed_attributes
     end
-   
+
     def changed?
       self.changed.size > 0
     end
-   
+
     def save
       if self.changed?
         response = StarRezApi::post("#{StarRezApi::base_uri}/update/#{self.class_name}/#{self.id}", :body => self.build_query(self.changed))
@@ -101,7 +101,7 @@ module StarRezApi
         return false
       end
     end
-    
+
     def create(attribute_hash = {}, options ={})
       formatted_hash = Hash.new
       attribute_hash.each_pair { |column, value| formatted_hash[net_camelize(column.to_s).to_sym] = value }
@@ -126,21 +126,21 @@ module StarRezApi
         end
       end
     end
-    
-   
+
+
     def all(page_index = 1, page_size = 50)
       return find(:all, {:size => page_size, :page => page_index})
     end
 
-    
-    
+
+
     # Find objects via the API interface
     # Returns an object defined on demand by the API result
     #
     # An Object ID or one of the following symbols (:all, :first) must be the first argument
     # +id+::          The ID of the Object your are searching
     # +:all+::        Returns an array of objects
-    # +:first+::      Returns the first matched object  
+    # +:first+::      Returns the first matched object
     #
     #
     # The following options are not required but can be used to refine the search
@@ -151,7 +151,7 @@ module StarRezApi
     # +:include+::     Include related tables (this only works if you go from parent->child)
     # +:order+::       An array of field names to order the response by.
     # +:limit+::       The number of results to return
-    # 
+    #
     # The +conditions+ option should be a hash with key-value pairs related to the search
     # requirements. Due to the nature of the StarRez API, there is an additional complexity
     # of seach operands. For this reason the conditions can be in either of the following
@@ -162,7 +162,7 @@ module StarRezApi
     #  { :column_name => { :operand => value } }
     #
     #  Available Operands are:
-    #  
+    #
     #  +ne+::     Not Equals
     #  +gt+::     Greater Than
     #  +lt+::     Less Than
@@ -183,11 +183,11 @@ module StarRezApi
     #
     # The +include+ option should be an Array of either symbols or strings which refer to a
     # related tables in the database. There is no error checking and an invalid relationship
-    # will result in a failure. This will create an instance variable of an Array of the 
+    # will result in a failure. This will create an instance variable of an Array of the
     # returned objects which will be accessible by a method with the table name pluralized.
     #
     # The +order+ option should be an array of fields which the response is ordered by. If
-    # You wish to search by descending order, use a key value of :desc. For example: 
+    # You wish to search by descending order, use a key value of :desc. For example:
     # :order => [:name_last, :name_first => :desc]
     #
     #
@@ -204,25 +204,25 @@ module StarRezApi
     #
     #   # Search for all rooms on a specific floor ('654')
     #   RoomLocationFloorSuite(654, :include => [:room])
-    
+
 
     def find(entry, options = {})
       options[:size] ||= 50
       options[:page] = options[:page].blank? || options[:page] == 1 ? 0 : options[:page] * options[:size]
       query_array = Array.new
       unless options[:conditions].blank?
-        query_array << get_condition_string(options[:conditions]) 
+        query_array << get_condition_string(options[:conditions])
       end
       if entry.is_a?(Symbol)
         get_url = "#{StarRezApi::base_uri}/select/#{self.class_name}.xml/"
       else
         get_url = "#{StarRezApi::base_uri}/select/#{self.class_name}.xml/#{entry}"
       end
-      if entry.eql? :first        
+      if entry.eql? :first
         query_array << "_top=1"
       elsif entry.eql? :all
         query_array << "_pageIndex=#{options[:page]}"
-        query_array << "_pageSize=#{options[:size]}"  
+        query_array << "_pageSize=#{options[:size]}"
       end
       unless options[:fields].blank?
         fields = Array.new
@@ -263,7 +263,7 @@ module StarRezApi
         self.populate_variables(ret,tables)
         if entry.eql? :all
           return [self]
-        else        
+        else
           return self
         end
       else
@@ -276,8 +276,8 @@ module StarRezApi
         return results
       end
     end
-    
-     
+
+
     def build_query(hash)
       query = Hash.new
       hash.keys.each do |attribute|
@@ -285,9 +285,9 @@ module StarRezApi
       end
       return query
     end
-    
-    private 
-    
+
+    private
+
     #Just a quick method used in get_condition_string that would have been repeated
     #Just takes the array and converts it into a formatted string for StarRezAPI
     def parse_value(values)
@@ -295,13 +295,13 @@ module StarRezApi
         return URI::encode(values.join(','))
       else
         return URI::encode(values.to_s)
-      end    
+      end
     end
-        
+
     # Coditions Clean-up by Dan
     # Example:
     # find(:all, :conditions => { :column_name => value, :column_name => { :operator => value } })
-    
+
     def get_condition_string(conditions)
       queries = Array.new
       if conditions.is_a?(Hash)
@@ -327,4 +327,5 @@ module StarRezApi
       string.gsub(/(?:_|(\/))([a-z\d]{1})/i) { "#{$1}#{$2.capitalize}" }.gsub('/', '::')
     end
   end
+
 end

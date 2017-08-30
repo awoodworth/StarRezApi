@@ -82,7 +82,8 @@ class StarRezAccount
     url = "#{base_uri}/accounts/createpayment/#{entry}"
     charge_groups_string = ""
     if conditions[:charge_groups].any?
-      break_up_total = conditions[:charge_groups].collect { |g| g[:amount] }.reduce(&:+)
+      # round to 2 decimals due to float inconsistencies
+      break_up_total = conditions[:charge_groups].collect { |g| g[:amount] }.reduce(&:+).round(2)
       raise ArgumentError, "Payment amount and charge group breakup amounts must be equal" unless break_up_total == amount
       conditions[:charge_groups].each do |charge_group|
         if charge_group[:id].present?
